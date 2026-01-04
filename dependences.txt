@@ -1,0 +1,7 @@
+Построить дерево зависимостей проекта
+
+./mvnw com.github.ferstl:depgraph-maven-plugin:aggregate -DcreateImage=false -DreduceEdges=false -Dscope=compile "-Dincludes=com.task*:*"
+
+Выпонить в каталоге Graphviz-12.1.0-win64\bin
+
+./dot -T png -o D:\JavaProjects\orchestratorsystem\target\dependency-graph.png D:\JavaProjects\orchestratorsystem\target\dependency-graph.dot
