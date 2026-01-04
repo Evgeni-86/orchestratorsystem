@@ -3,6 +3,7 @@ package com.taskorchestrator.task_registry.domain;
 import com.taskorchestrator.task_registry.enums.TaskType;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = "id")
 public class TaskTemplate {
 
-  private final String id;                 // UUID
+  private final UUID id;             // UUID
   private String name;               // "process-payment"
   private String version;            // "v1.0" (пока простой, позже добавим версионность)
   private TaskType type;             // HTTP_CALL, SCRIPT, DATABASE_QUERY

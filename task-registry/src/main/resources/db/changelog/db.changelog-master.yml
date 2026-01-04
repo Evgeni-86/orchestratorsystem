@@ -1,0 +1,4 @@
+databaseChangeLog:
+  - include:
+      file: changelog/task_registry.yml
+      relativeToChangelogFile: true

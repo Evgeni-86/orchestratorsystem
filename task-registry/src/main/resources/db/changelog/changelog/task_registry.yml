@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog/changelog/task_registry.yml
+
+  - changeSet:
+      id: create_table_task_registry
+      author: Batanov Evgenii
+      comment: Создание таблицы хранилища задач
+      changes:
+        - sqlFile:
+            path: create_table_task_registry.sql
+            relativeToChangelogFile: true

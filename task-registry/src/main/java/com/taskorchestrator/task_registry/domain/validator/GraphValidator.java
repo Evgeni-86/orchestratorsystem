@@ -93,7 +93,7 @@ public class GraphValidator {
 
     // Инициализируем все вершины
     for (TaskTemplate taskTemplate : graph.getTasks()) {
-      adjacencyList.put(taskTemplate.getId(), new ArrayList<>());
+      adjacencyList.put(taskTemplate.getId().toString(), new ArrayList<>());
     }
 
     // Добавляем ребра (зависимости)
@@ -126,7 +126,7 @@ public class GraphValidator {
     // 2. Проверка ссылок на несуществующие задачи
     Set<String> taskIds = new HashSet<>();
     for (TaskTemplate taskTemplate : graph.getTasks()) {
-      taskIds.add(taskTemplate.getId());
+      taskIds.add(taskTemplate.getId().toString());
     }
 
     for (TaskDependency taskDependency : graph.getDependencies()) {
