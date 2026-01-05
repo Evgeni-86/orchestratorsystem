@@ -4,6 +4,7 @@ import com.taskorchestrator.task_registry.dto.ResponseDto;
 import com.taskorchestrator.task_registry.dto.TaskTemplateUpdateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateCreateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateResponseDto;
+import com.taskorchestrator.task_registry.service.TaskTemplateService;
 import com.taskorchestrator.task_registry.util.ResponseBuilder;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -24,9 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/templates")
 public class TaskRegistryController extends BaseController {
 
+  private final TaskTemplateService taskTemplateService;
+
   public TaskRegistryController(
-      ResponseBuilder responseBuilder) {
+      ResponseBuilder responseBuilder, TaskTemplateService taskTemplateService) {
     super(responseBuilder);
+    this.taskTemplateService = taskTemplateService;
   }
 
   @PostMapping(
@@ -44,7 +48,7 @@ public class TaskRegistryController extends BaseController {
   @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ResponseDto<List<TaskTemplateResponseDto>>> findAllTaskTemplate(
       Pageable pageable) {
-    PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+    Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
     Page<TaskTemplateResponseDto> pageableTaskTemplateResponse = taskTemplateService.findAllPage(
         pageRequest);
     return okResponseList(pageableTaskTemplateResponse);
