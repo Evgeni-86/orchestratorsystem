@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class TaskTemplateService {
 
+  public static final String TASK_TEMPLATE_NOT_FOUND_WITH_ID = "TaskTemplate not found with {id}: ";
   private final TaskTemplateRepository taskTemplateRepository;
   private final TaskTemplateDtoMapper taskTemplateDtoMapper;
   private final TaskTemplateEntityMapper taskTemplateEntityMapper;
@@ -46,7 +47,7 @@ public class TaskTemplateService {
   public TaskTemplateResponseDto findById(String id) {
     TaskTemplateEntity taskTemplate = taskTemplateRepository
         .findById(UUID.fromString(id))
-        .orElseThrow(() -> new ObjectNotFoundException("TaskTemplate not found with {id}: " + id));
+        .orElseThrow(() -> new ObjectNotFoundException(TASK_TEMPLATE_NOT_FOUND_WITH_ID + id));
     return taskTemplateDirectMapper.entityToResponseDto(taskTemplate);
   }
 
@@ -55,7 +56,7 @@ public class TaskTemplateService {
       TaskTemplateUpdateDto taskTemplateUpdateDto) {
     TaskTemplateEntity taskTemplate = taskTemplateRepository
         .findById(UUID.fromString(id))
-        .orElseThrow(() -> new ObjectNotFoundException("TaskTemplate not found with {id}: " + id));
+        .orElseThrow(() -> new ObjectNotFoundException(TASK_TEMPLATE_NOT_FOUND_WITH_ID + id));
     taskTemplateDirectMapper.updateEntityFromDto(taskTemplate, taskTemplateUpdateDto);
     return taskTemplateDirectMapper.entityToResponseDto(taskTemplate);
   }
@@ -64,7 +65,7 @@ public class TaskTemplateService {
   public void deleteTaskTemplate(String id) {
     TaskTemplateEntity taskTemplate = taskTemplateRepository
         .findById(UUID.fromString(id))
-        .orElseThrow(() -> new ObjectNotFoundException("TaskTemplate not found with {id}: " + id));
+        .orElseThrow(() -> new ObjectNotFoundException(TASK_TEMPLATE_NOT_FOUND_WITH_ID + id));
     try {
       taskTemplateRepository.deleteById(taskTemplate.getId());
     } catch (DataIntegrityViolationException ex) {

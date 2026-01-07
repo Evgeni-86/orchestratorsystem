@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Простой валидатор графов зависимостей задач Основная функция: проверка на циклические
@@ -99,11 +100,11 @@ public class GraphValidator {
     // Добавляем ребра (зависимости)
     for (TaskDependency taskDependency : graph.getDependencies()) {
       // taskDependency: child зависит от parent
-      String childId = taskDependency.getChildTaskId();
-      String parentId = taskDependency.getParentTaskId();
+      UUID childId = taskDependency.getChildTaskId();
+      UUID parentId = taskDependency.getParentTaskId();
 
       // Добавляем parent в список зависимостей child
-      adjacencyList.get(childId).add(parentId);
+      adjacencyList.get(childId.toString()).add(parentId.toString());
     }
 
     return adjacencyList;
@@ -130,10 +131,10 @@ public class GraphValidator {
     }
 
     for (TaskDependency taskDependency : graph.getDependencies()) {
-      if (!taskIds.contains(taskDependency.getParentTaskId())) {
+      if (!taskIds.contains(taskDependency.getParentTaskId().toString())) {
         result.addError("Parent task not found: " + taskDependency.getParentTaskId());
       }
-      if (!taskIds.contains(taskDependency.getChildTaskId())) {
+      if (!taskIds.contains(taskDependency.getChildTaskId().toString())) {
         result.addError("Child task not found: " + taskDependency.getChildTaskId());
       }
     }

@@ -14,6 +14,7 @@ import com.taskorchestrator.task_registry.repository.TaskTemplateRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -38,6 +39,23 @@ class TaskTemplateRepositoryTestcontainersTest {
   private EntityManager entityManager;
   @Autowired
   private PlatformTransactionManager transactionManager;
+
+  @BeforeEach
+  void cleanDatabase() {
+    TransactionStatus status = transactionManager.getTransaction(
+        new DefaultTransactionDefinition());
+    try {
+      entityManager.createNativeQuery("DELETE FROM task_dependencies").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM graph_tasks").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graphs").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_templates").executeUpdate();
+      transactionManager.commit(status);
+    } catch (Exception e) {
+      transactionManager.rollback(status);
+      throw e;
+    }
+    entityManager.clear();
+  }
 
   @Test
   @Transactional(propagation = Propagation.NOT_SUPPORTED)

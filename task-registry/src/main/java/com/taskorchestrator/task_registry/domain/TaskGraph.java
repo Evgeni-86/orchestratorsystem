@@ -1,6 +1,7 @@
 package com.taskorchestrator.task_registry.domain;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,10 +11,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = "id")
 public class TaskGraph {
 
-  private String id;
+  private UUID id;
   private String name;
   private List<TaskTemplate> tasks;
   private List<TaskDependency> dependencies;
-  private String entryPointTaskId; // ID стартовой задачи
+  private UUID entryPointTaskId; // ID стартовой задачи
   private boolean validated;       // Прошел ли проверку на циклы
 }
