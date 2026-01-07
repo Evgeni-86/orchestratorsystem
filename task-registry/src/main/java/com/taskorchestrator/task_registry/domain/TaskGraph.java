@@ -10,10 +10,10 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = "id")
 public class TaskGraph {
 
-  private final String id;
+  private String id;
   private String name;
   private List<TaskTemplate> tasks;
   private List<TaskDependency> dependencies;
-  private final String entryPointTaskId; // ID стартовой задачи
+  private String entryPointTaskId; // ID стартовой задачи
   private boolean validated;       // Прошел ли проверку на циклы
 }

@@ -1,20 +1,15 @@
 package com.taskorchestrator.task_registry.dto.task;
 
 import com.taskorchestrator.task_registry.enums.TaskType;
-import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
-public record TaskTemplateResponseDto(
-    UUID id,
+public record TaskTemplateUpdateDto(
     String name,
     String version,
     TaskType type,
     Map<String, Object> inputSchema,
     Map<String, Object> outputSchema,
-    Map<String, Object> config,
-    Instant createdAt,
-    Instant updatedAt
+    Map<String, Object> config
 ) {
 
 }

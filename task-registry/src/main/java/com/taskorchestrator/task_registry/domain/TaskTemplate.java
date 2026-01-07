@@ -13,13 +13,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = "id")
 public class TaskTemplate {
 
-  private final UUID id;             // UUID
+  private UUID id;             // UUID
   private String name;               // "process-payment"
   private String version;            // "v1.0" (пока простой, позже добавим версионность)
   private TaskType type;             // HTTP_CALL, SCRIPT, DATABASE_QUERY
   private Map<String, Object> inputSchema;  // JSON Schema для валидации входных данных
   private Map<String, Object> outputSchema; // JSON Schema для выходных данных
   private Map<String, Object> config;       // Конфигурация выполнения (таймауты, заголовки и т.д.)
-  private final Instant createdAt;
+  private Instant createdAt;
   private Instant updatedAt;
 }

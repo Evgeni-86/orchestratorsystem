@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(of = {"parentTaskId", "childTaskId"})
 public class TaskDependency {
 
-  private final String parentTaskId;  // ID задачи-предка
-  private final String childTaskId;   // ID задачи-потомка
+  private String parentTaskId;  // ID задачи-предка
+  private String childTaskId;   // ID задачи-потомка
   private TaskCondition condition;     // "SUCCESS", "ALWAYS", "ON_FAILURE" (пока только SUCCESS)
 }
 

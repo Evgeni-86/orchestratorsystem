@@ -1,7 +1,7 @@
 package com.taskorchestrator.task_registry.controller;
 
 import com.taskorchestrator.task_registry.dto.ResponseDto;
-import com.taskorchestrator.task_registry.dto.TaskTemplateUpdateDto;
+import com.taskorchestrator.task_registry.dto.task.TaskTemplateUpdateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateCreateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateResponseDto;
 import com.taskorchestrator.task_registry.service.TaskTemplateService;

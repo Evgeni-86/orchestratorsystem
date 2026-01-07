@@ -1,12 +1,15 @@
 package com.taskorchestrator.task_registry.service;
 
-import com.taskorchestrator.task_registry.dto.TaskTemplateUpdateDto;
+import com.taskorchestrator.task_registry.domain.TaskTemplate;
+import com.taskorchestrator.task_registry.dto.task.TaskTemplateUpdateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateCreateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateResponseDto;
 import com.taskorchestrator.task_registry.entity.TaskTemplateEntity;
 import com.taskorchestrator.task_registry.exception.DataBindingViolationException;
 import com.taskorchestrator.task_registry.exception.ObjectNotFoundException;
-import com.taskorchestrator.task_registry.mapper.TaskTemplateMapper;
+import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateDtoMapper;
+import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateEntityMapper;
+import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateDirectMapper;
 import com.taskorchestrator.task_registry.repository.TaskTemplateRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,18 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class TaskTemplateService {
 
   private final TaskTemplateRepository taskTemplateRepository;
-  private final TaskTemplateMapper taskTemplateMapper;
+  private final TaskTemplateDtoMapper taskTemplateDtoMapper;
+  private final TaskTemplateEntityMapper taskTemplateEntityMapper;
+  private final TaskTemplateDirectMapper taskTemplateDirectMapper;
 
   public TaskTemplateResponseDto createTaskTemplate(TaskTemplateCreateDto taskTemplateCreateDto) {
-    TaskTemplateEntity taskTemplate = taskTemplateMapper.toEntity();
+    TaskTemplate domainTaskTemplate = taskTemplateDtoMapper.createDtoToDomain(
+        taskTemplateCreateDto);
+    TaskTemplateEntity taskTemplate = taskTemplateEntityMapper.domainToEntity(domainTaskTemplate);
     TaskTemplateEntity createdTaskTemplate = taskTemplateRepository.save(taskTemplate);
-    return taskTemplateMapper.toDto(createdTaskTemplate);
+    return taskTemplateDirectMapper.entityToResponseDto(createdTaskTemplate);
   }
 
   @Transactional(readOnly = true)
   public Page<TaskTemplateResponseDto> findAllPage(Pageable pageable) {
     Page<TaskTemplateEntity> taskTemplatePage = taskTemplateRepository.findAll(pageable);
-    return taskTemplatePage.map(taskTemplateMapper::toDto);
+    return taskTemplatePage.map(taskTemplateDirectMapper::entityToResponseDto);
   }
 
   @Transactional(readOnly = true)
@@ -40,7 +47,7 @@ public class TaskTemplateService {
     TaskTemplateEntity taskTemplate = taskTemplateRepository
         .findById(UUID.fromString(id))
         .orElseThrow(() -> new ObjectNotFoundException("TaskTemplate not found with {id}: " + id));
-    return taskTemplateMapper.toDto(taskTemplate);
+    return taskTemplateDirectMapper.entityToResponseDto(taskTemplate);
   }
 
   @Transactional
@@ -49,9 +56,8 @@ public class TaskTemplateService {
     TaskTemplateEntity taskTemplate = taskTemplateRepository
         .findById(UUID.fromString(id))
         .orElseThrow(() -> new ObjectNotFoundException("TaskTemplate not found with {id}: " + id));
-    taskTemplateMapper.updateTaskTemplateFromDto(taskTemplateUpdateDto, taskTemplate);
-    TaskTemplateEntity updateTaskTemplate = taskTemplateRepository.save(taskTemplate);
-    return taskTemplateMapper.toDto(updateTaskTemplate);
+    taskTemplateDirectMapper.updateEntityFromDto(taskTemplate, taskTemplateUpdateDto);
+    return taskTemplateDirectMapper.entityToResponseDto(taskTemplate);
   }
 
   @Transactional

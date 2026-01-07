@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +34,6 @@ public class TaskTemplateEntity {
   @Id
   @UuidGenerator
   @Column(name = "id", updatable = false)
-  @Setter(AccessLevel.NONE)
   private UUID id;
 
   @Column(name = "name", nullable = false)

@@ -1,5 +1,15 @@
 package com.taskorchestrator.task_registry.dto.task;
 
-public record TaskTemplateCreateDto() {
+import com.taskorchestrator.task_registry.enums.TaskType;
+import java.util.Map;
+
+public record TaskTemplateCreateDto(
+    String name,
+    String version,
+    TaskType type,
+    Map<String, Object> inputSchema,
+    Map<String, Object> outputSchema,
+    Map<String, Object> config
+) {
 
 }
