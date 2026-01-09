@@ -85,8 +85,9 @@ class GraphControllerTest {
 
     mockMvc.perform(get("/api/v1/graphs/{id}", graphId))
         .andExpect(status().isNotFound())
-        .andExpect(content().string(""))
-        .andExpect(header().doesNotExist("Content-Type"));
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.message").value("Graph not found"));
 
     verify(graphService).findById(graphId);
     verifyNoInteractions(responseBuilder);
@@ -207,5 +208,21 @@ class GraphControllerTest {
     // When & Then - запрос без авторизации должен проходить
     mockMvc.perform(get("/api/v1/graphs/{id}", graphId))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void findGraph_shouldReturn500WhenInvalidUUID() throws Exception {
+    String invalidId = "not-a-uuid";
+
+    when(graphService.findById(invalidId))
+        .thenThrow(new IllegalArgumentException("Invalid UUID string: " + invalidId));
+
+    mockMvc.perform(get("/api/v1/graphs/{id}", invalidId))
+        .andExpect(status().isInternalServerError())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.status").value(500))
+        .andExpect(jsonPath("$.message").value("Произошла неизвестная ошибка."));
+
+    verify(graphService).findById(invalidId);
   }
 }
