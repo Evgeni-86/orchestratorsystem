@@ -7,7 +7,7 @@ import java.util.UUID;
 public record TaskGraphCreateDto(
     String name,
     List<UUID> taskTemplateIds,
-    List<GraphDependencyDto> dependencies,
+    List<TaskDependencyDto> dependencies,
     Map<String, Object> metadata
 ) {
 
@@ -16,7 +16,7 @@ public record TaskGraphCreateDto(
   }
 
   public TaskGraphCreateDto(String name, List<UUID> taskTemplateIds,
-      List<GraphDependencyDto> dependencies) {
+      List<TaskDependencyDto> dependencies) {
     this(name, taskTemplateIds, dependencies, Map.of());
   }
 }

@@ -33,7 +33,7 @@ class TaskRegistryControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
-  void postNewVideoShouldWork() throws Exception {
+  void postNewTaskTemplateShouldWork() throws Exception {
     // Arrange
     TaskTemplateCreateDto dto = new TaskTemplateCreateDto(
         "name",

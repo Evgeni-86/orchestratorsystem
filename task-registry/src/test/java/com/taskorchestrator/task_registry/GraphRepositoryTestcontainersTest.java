@@ -3,7 +3,7 @@ package com.taskorchestrator.task_registry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.taskorchestrator.task_registry.config.IntegrationTest;
-import com.taskorchestrator.task_registry.dto.graph.GraphDependencyDto;
+import com.taskorchestrator.task_registry.dto.graph.TaskDependencyDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphCreateDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphResponseDto;
 import com.taskorchestrator.task_registry.entity.TaskDependencyEntity;
@@ -76,8 +76,8 @@ class GraphRepositoryTestcontainersTest {
         "ETL Pipeline",
         List.of(template1.getId(), template2.getId(), template3.getId()),
         List.of(
-            new GraphDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS),
-            new GraphDependencyDto(template2.getId(), template3.getId(), TaskCondition.ALWAYS)
+            new TaskDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS),
+            new TaskDependencyDto(template2.getId(), template3.getId(), TaskCondition.ALWAYS)
         ),
         Map.of("environment", "test", "version", "1.0.0")
     );
@@ -159,8 +159,8 @@ class GraphRepositoryTestcontainersTest {
         "Cyclic Test",
         List.of(template1.getId(), template2.getId()),
         List.of(
-            new GraphDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS),
-            new GraphDependencyDto(template2.getId(), template1.getId(), TaskCondition.ALWAYS)
+            new TaskDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS),
+            new TaskDependencyDto(template2.getId(), template1.getId(), TaskCondition.ALWAYS)
         ),
         Map.of()
     );
@@ -215,9 +215,9 @@ class GraphRepositoryTestcontainersTest {
         "Complex ETL",
         List.of(t1.getId(), t2.getId(), t3.getId()),
         List.of(
-            new GraphDependencyDto(t1.getId(), t2.getId(), TaskCondition.SUCCESS),
-            new GraphDependencyDto(t2.getId(), t3.getId(), TaskCondition.ALWAYS),
-            new GraphDependencyDto(t1.getId(), t3.getId(), TaskCondition.ON_FAILURE)
+            new TaskDependencyDto(t1.getId(), t2.getId(), TaskCondition.SUCCESS),
+            new TaskDependencyDto(t2.getId(), t3.getId(), TaskCondition.ALWAYS),
+            new TaskDependencyDto(t1.getId(), t3.getId(), TaskCondition.ON_FAILURE)
         ),
         Map.of("complexity", "high")
     );
@@ -264,7 +264,7 @@ class GraphRepositoryTestcontainersTest {
         "Cascade Test",
         List.of(template1.getId(), template2.getId()),
         List.of(
-            new GraphDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS)
+            new TaskDependencyDto(template1.getId(), template2.getId(), TaskCondition.SUCCESS)
         ),
         Map.of()
     );
@@ -300,7 +300,7 @@ class GraphRepositoryTestcontainersTest {
           "Graph " + i,
           templateIds,
           List.of(
-              new GraphDependencyDto(templateIds.get(0), templateIds.get(1), TaskCondition.SUCCESS)
+              new TaskDependencyDto(templateIds.get(0), templateIds.get(1), TaskCondition.SUCCESS)
           ),
           Map.of("index", i)
       );
@@ -327,4 +327,6 @@ class GraphRepositoryTestcontainersTest {
       assertThat(graph.getDependencies()).hasSize(1);
     }
   }
+
+
 }

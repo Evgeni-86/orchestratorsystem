@@ -7,6 +7,7 @@ import com.taskorchestrator.task_registry.domain.TaskGraph;
 import com.taskorchestrator.task_registry.domain.TaskTemplate;
 import com.taskorchestrator.task_registry.domain.validator.GraphValidator;
 import com.taskorchestrator.task_registry.domain.validator.ValidationResult;
+import com.taskorchestrator.task_registry.dto.graph.GraphValidateResultResponseDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphCreateDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphResponseDto;
 import com.taskorchestrator.task_registry.entity.TaskDependencyEntity;
@@ -16,6 +17,7 @@ import com.taskorchestrator.task_registry.exception.GraphValidationException;
 import com.taskorchestrator.task_registry.exception.ObjectNotFoundException;
 import com.taskorchestrator.task_registry.mapper.graph.GraphDirectMapper;
 import com.taskorchestrator.task_registry.mapper.graph.GraphDtoMapper;
+import com.taskorchestrator.task_registry.mapper.graph.GraphEntityMapper;
 import com.taskorchestrator.task_registry.repository.TaskGraphRepository;
 import com.taskorchestrator.task_registry.repository.TaskTemplateRepository;
 import java.util.List;
@@ -39,6 +41,7 @@ public class GraphService {
   private final TaskTemplateRepository taskTemplateRepository;
   private final GraphDtoMapper graphDtoMapper;
   private final GraphDirectMapper graphDirectMapper;
+  private final GraphEntityMapper graphEntityMapper;
 
   @Transactional
   public TaskGraphResponseDto createTaskGraph(TaskGraphCreateDto taskGraphCreateDto) {
@@ -132,5 +135,23 @@ public class GraphService {
           entity.setCondition(domainDep.getCondition());
           return entity;
         }).toList();
+  }
+
+  public GraphValidateResultResponseDto validateGraphById(String id) {
+    TaskGraphEntity graph = taskGraphRepository.findById(UUID.fromString(id))
+        .orElseThrow(() -> new ObjectNotFoundException("Graph not found with {id}: " + id));
+    ValidationResult validationResult = graphValidator.validate(graphEntityMapper.toDomain(graph));
+    return graphDtoMapper.validateToResponseDto(validationResult);
+  }
+
+  @Transactional(readOnly = true)
+  public TaskGraphResponseDto findById(String id) {
+    TaskGraphEntity graph = taskGraphRepository.findWithFullRelationsById(UUID.fromString(id))
+        .orElseThrow(() -> new ObjectNotFoundException("Graph not found with {id}: " + id));
+    TaskGraph graphDomain = graphEntityMapper.toDomain(graph);
+    List<UUID> entryPoints = graphValidator.findEntryPoints(graphDomain)
+        .stream()
+        .map(UUID::fromString).toList();
+    return graphDirectMapper.entityToResponseDtoWithEntryPoint(graph, entryPoints);
   }
 }

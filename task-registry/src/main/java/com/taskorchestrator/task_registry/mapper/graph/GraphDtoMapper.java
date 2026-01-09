@@ -4,7 +4,9 @@ import com.taskorchestrator.task_registry.config.CentralMapperConfig;
 import com.taskorchestrator.task_registry.domain.TaskDependency;
 import com.taskorchestrator.task_registry.domain.TaskGraph;
 import com.taskorchestrator.task_registry.domain.TaskTemplate;
-import com.taskorchestrator.task_registry.dto.graph.GraphDependencyDto;
+import com.taskorchestrator.task_registry.domain.validator.ValidationResult;
+import com.taskorchestrator.task_registry.dto.graph.TaskDependencyDto;
+import com.taskorchestrator.task_registry.dto.graph.GraphValidateResultResponseDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphCreateDto;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(config = CentralMapperConfig.class)
 public interface GraphDtoMapper {
+
+  GraphValidateResultResponseDto validateToResponseDto(ValidationResult  validationResult);
 
   @Mapping(target = "id", ignore = true) // генерируется при сохранении
   @Mapping(target = "entryPointTaskId", ignore = true) // вычисляется отдельно
@@ -39,9 +43,9 @@ public interface GraphDtoMapper {
   // Маппинг GraphDependencyDto → TaskDependency
   @Mapping(target = "parentTaskId", source = "parentTemplateId")
   @Mapping(target = "childTaskId", source = "childTemplateId")
-  TaskDependency mapDependency(GraphDependencyDto dto);
+  TaskDependency mapDependency(TaskDependencyDto dto);
 
-  List<TaskDependency> mapDependencies(List<GraphDependencyDto> dependencies);
+  List<TaskDependency> mapDependencies(List<TaskDependencyDto> dependencies);
 
   // Гарантируем, что коллекции никогда не null
   @AfterMapping

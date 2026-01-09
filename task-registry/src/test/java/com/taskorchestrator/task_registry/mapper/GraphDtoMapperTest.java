@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.taskorchestrator.task_registry.domain.TaskDependency;
 import com.taskorchestrator.task_registry.domain.TaskGraph;
-import com.taskorchestrator.task_registry.dto.graph.GraphDependencyDto;
+import com.taskorchestrator.task_registry.dto.graph.TaskDependencyDto;
 import com.taskorchestrator.task_registry.dto.graph.TaskGraphCreateDto;
 import com.taskorchestrator.task_registry.enums.TaskCondition;
 import com.taskorchestrator.task_registry.mapper.graph.GraphDtoMapper;
@@ -29,7 +29,7 @@ class GraphDtoMapperTest {
         "Test Graph",
         List.of(templateId1, templateId2),
         List.of(
-            new GraphDependencyDto(templateId1, templateId2, TaskCondition.SUCCESS)
+            new TaskDependencyDto(templateId1, templateId2, TaskCondition.SUCCESS)
         ),
         Map.of("priority", "high")
     );
@@ -93,7 +93,7 @@ class GraphDtoMapperTest {
     // given
     UUID parentId = UUID.randomUUID();
     UUID childId = UUID.randomUUID();
-    GraphDependencyDto dto = new GraphDependencyDto(parentId, childId, TaskCondition.ON_FAILURE);
+    TaskDependencyDto dto = new TaskDependencyDto(parentId, childId, TaskCondition.ON_FAILURE);
 
     // when
     TaskDependency result = mapper.mapDependency(dto);
@@ -113,7 +113,7 @@ class GraphDtoMapperTest {
     // when & then
     // Проверяем, что конструктор DTO валидирует данные
     assertThatThrownBy(() ->
-        new GraphDependencyDto(sameId, sameId, TaskCondition.SUCCESS)
+        new TaskDependencyDto(sameId, sameId, TaskCondition.SUCCESS)
     )
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("cannot depend on itself");
@@ -131,7 +131,7 @@ class GraphDtoMapperTest {
     for (TaskCondition condition : conditions) {
       UUID parentId = UUID.randomUUID();
       UUID childId = UUID.randomUUID();
-      GraphDependencyDto dto = new GraphDependencyDto(parentId, childId, condition);
+      TaskDependencyDto dto = new TaskDependencyDto(parentId, childId, condition);
 
       TaskDependency result = mapper.mapDependency(dto);
 
