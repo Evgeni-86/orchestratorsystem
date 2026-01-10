@@ -27,7 +27,7 @@ public abstract class BaseController {
     return ResponseEntity.ok(responseBuilder.buildSingle(data));
   }
 
-  protected <T> ResponseEntity<ResponseDto<List<T>>> okResponseList(Page<T> page) {
+  protected <T> ResponseEntity<ResponseDto<List<T>>> okResponse(Page<T> page) {
     return ResponseEntity.ok(responseBuilder.buildPaged(page));
   }
 

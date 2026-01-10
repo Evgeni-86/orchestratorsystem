@@ -1,6 +1,7 @@
 package com.taskorchestrator.task_registry.service;
 
 import com.taskorchestrator.task_registry.domain.TaskTemplate;
+import com.taskorchestrator.task_registry.dto.task.TaskTemplateFilterDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateUpdateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateCreateDto;
 import com.taskorchestrator.task_registry.dto.task.TaskTemplateResponseDto;
@@ -11,11 +12,13 @@ import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateDtoMap
 import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateEntityMapper;
 import com.taskorchestrator.task_registry.mapper.tasktemplate.TaskTemplateDirectMapper;
 import com.taskorchestrator.task_registry.repository.TaskTemplateRepository;
+import com.taskorchestrator.task_registry.repository.specification.TaskTemplateSpecificationBuilder;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,7 @@ public class TaskTemplateService {
   private final TaskTemplateDtoMapper taskTemplateDtoMapper;
   private final TaskTemplateEntityMapper taskTemplateEntityMapper;
   private final TaskTemplateDirectMapper taskTemplateDirectMapper;
+  private final TaskTemplateSpecificationBuilder taskTemplateSpecificationBuilder;
 
   public TaskTemplateResponseDto createTaskTemplate(TaskTemplateCreateDto taskTemplateCreateDto) {
     TaskTemplate domainTaskTemplate = taskTemplateDtoMapper.createDtoToDomain(
@@ -38,8 +42,12 @@ public class TaskTemplateService {
   }
 
   @Transactional(readOnly = true)
-  public Page<TaskTemplateResponseDto> findAllPage(Pageable pageable) {
-    Page<TaskTemplateEntity> taskTemplatePage = taskTemplateRepository.findAll(pageable);
+  public Page<TaskTemplateResponseDto> findAllPage(TaskTemplateFilterDto filter,
+      Pageable pageable) {
+    Specification<TaskTemplateEntity> specification = taskTemplateSpecificationBuilder.build(
+        filter);
+    Page<TaskTemplateEntity> taskTemplatePage = taskTemplateRepository.findAll(specification,
+        pageable);
     return taskTemplatePage.map(taskTemplateDirectMapper::entityToResponseDto);
   }
 

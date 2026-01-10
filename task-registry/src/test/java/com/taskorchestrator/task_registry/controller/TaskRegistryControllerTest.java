@@ -11,6 +11,7 @@ import com.taskorchestrator.task_registry.dto.task.TaskTemplateResponseDto;
 import com.taskorchestrator.task_registry.enums.TaskType;
 import com.taskorchestrator.task_registry.service.TaskTemplateService;
 import com.taskorchestrator.task_registry.util.ResponseBuilder;
+import com.taskorchestrator.task_registry.util.sort.tasktemplate.TaskTemplateSortResolver;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,8 @@ class TaskRegistryControllerTest {
   private TaskTemplateService taskTemplateService;
   @MockitoBean
   private ResponseBuilder responseBuilder;
+  @MockitoBean
+  private TaskTemplateSortResolver taskTemplateSortResolver;
   @Autowired
   private ObjectMapper objectMapper;
 
