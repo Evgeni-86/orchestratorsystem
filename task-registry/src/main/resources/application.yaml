@@ -5,3 +5,23 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:/db/changelog/db.changelog-master.yml
+
+  # Настройки базы данных (для локальной разработки)
+  datasource:
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/orchestratorsystem
+
+  # Настройки JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate  # или none - чтобы Liquibase управлял схемой
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Настройки порта (опционально, по умолчанию 8080)
+server:
+  port: 8080

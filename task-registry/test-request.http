@@ -1,0 +1,23 @@
+
+###
+POST http://localhost:8080/api/v1/templates
+Content-Type: application/json
+
+{
+  "name": "name",
+  "version": "v1.0",
+  "type": "HTTP_CALL",
+  "inputSchema": {
+    "new": "schema"
+  },
+  "outputSchema": null,
+  "config": null
+}
+
+###
+GET http://localhost:8080/api/v1/templates
+
+### Проверка пагинации
+GET http://localhost:8080/api/v1/templates?size=2
+###
+GET http://localhost:8080/api/v1/templates?page=1&size=2
