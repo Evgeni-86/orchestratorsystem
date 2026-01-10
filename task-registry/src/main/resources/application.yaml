@@ -8,13 +8,14 @@ spring:
 
   # Настройки базы данных (для локальной разработки)
   datasource:
-    username: postgres
-    password: postgres
+    username: postgresdb-user-prod
+    password: postgresdb-pwd-prod
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/orchestratorsystem
+    url: jdbc:postgresql://${HOST_NAME:localhost}:5432/orchestratorsystem
 
   # Настройки JPA/Hibernate
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: validate  # или none - чтобы Liquibase управлял схемой
     show-sql: true

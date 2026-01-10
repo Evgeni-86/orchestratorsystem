@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+
+  task-registry:
+    build: task-registry
+    environment:
+      - HOST_NAME=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+
+  postgres:
+    image: postgres:17
+    restart: always
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=${POSTGRESDB_USR}
+      - POSTGRES_PASSWORD=${POSTGRESDB_PWD}
+      - POSTGRES_DB=orchestratorsystem
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 2s
+      retries: 60
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      
+      
+  rabbitmq:
+    image: rabbitmq:3.11.8-management
+    restart: always
+    container_name: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USR}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PWD}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 2s
+      retries: 60
+
+volumes:
+  postgres_data:
