@@ -49,9 +49,24 @@ CREATE TABLE task_dependencies
 )
     );
 
--- 5. Индексы для производительности
+-- 4. Outbox
+CREATE TABLE task_templates_outbox
+(
+    id           UUID        NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMPTZ,
+    type         VARCHAR(50) NOT NULL,
+    payload      VARCHAR,
+    outbox_status VARCHAR(50) NOT NULL,
+    version      INT,
+
+    CONSTRAINT pk_task_templates_outbox_id PRIMARY KEY (id)
+);
+
+-- 6. Индексы для производительности
 CREATE INDEX idx_graph_tasks_graph ON graph_tasks (graph_id);
 CREATE INDEX idx_graph_tasks_template ON graph_tasks (template_id);
 CREATE INDEX idx_dependencies_graph ON task_dependencies (graph_id);
 CREATE INDEX idx_dependencies_parent ON task_dependencies (parent_template_id);
 CREATE INDEX idx_dependencies_child ON task_dependencies (child_template_id);
+CREATE INDEX idx_task_templates_outbox_outbox_status ON task_templates_outbox (outbox_status);

@@ -23,6 +23,23 @@ spring:
       hibernate:
         format_sql: true
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST_NAME:localhost}
+    port: 5672
+    username: rabbit-user-prod
+    password: rabbit-pwd-prod
+    connection-timeout: 30000
+    publisher-confirm-type: correlated
+rabbitmq:
+  exchange:
+    task-graph: task_graph_exchange
+  routing-key:
+    task-graph: task_graph_routing_key
+
+task-registry-service:
+  outbox-scheduler-fixed-rate: 10000
+  outbox-scheduler-initial-delay: 10000
+
 # Настройки порта (опционально, по умолчанию 8080)
 server:
   port: 8080

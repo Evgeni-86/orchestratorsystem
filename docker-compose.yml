@@ -2,15 +2,16 @@ version: '3.8'
 
 services:
 
-  task-registry:
-    build: task-registry
-    environment:
-      - HOST_NAME=postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+#  task-registry:
+#    build: task-registry
+#    environment:
+#      - HOST_NAME=postgres
+#      - RABBITMQ_HOST_NAME=rabbitmq
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
 
 
   postgres:
