@@ -6,6 +6,7 @@ import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,25 +16,49 @@ public class RabbitMQConfig {
 
   @Value("${rabbitmq.exchange.task-graph}")
   private String taskGraphExchange;
+  @Value("${rabbitmq.routing-key.task-graph}")
+  private String taskGraphRoutingKey;
+  @Value("${rabbitmq.queue.task-graph}")
+  private String taskGraphQueue;
 
   @Bean
   public Declarables declarables() {
+    DirectExchange exchange = ExchangeBuilder.directExchange(taskGraphExchange)
+        .durable(true)
+        .build();
+
+    Queue queue = QueueBuilder.durable(taskGraphQueue)
+        .withArgument("x-dead-letter-exchange", taskGraphExchange + ".dlx")
+        .withArgument("x-dead-letter-routing-key", taskGraphRoutingKey + ".dead")
+        .build();
+
     return new Declarables(
-        // 1. Обменник
-        ExchangeBuilder.directExchange(taskGraphExchange)
-            .durable(true)
-            .build(),
+        exchange,
+        queue,
+        BindingBuilder.bind(queue)
+            .to(exchange)
+            .with(taskGraphRoutingKey));
+  }
 
-        // 2. Очередь
-        QueueBuilder.durable("task_graph_queue")
-            .withArgument("x-dead-letter-exchange", taskGraphExchange + ".dlx")
-            .withArgument("x-dead-letter-routing-key", "task_graph.dead")
-            .build(),
+  @Bean
+  public Declarables deadLetterDeclarables() {
+    String dlxExchange = taskGraphExchange + ".dlx";
+    String dlxQueue = taskGraphQueue + ".dlq";
+    String dlxRoutingKey = taskGraphRoutingKey + ".dead";
 
-        // 3. Привязка очереди к обменнику
-        BindingBuilder.bind(new Queue("task_graph_queue"))
-            .to(new DirectExchange(taskGraphExchange))
-            .with("task_graph.routing.key")
-    );
+    Queue dlq = QueueBuilder.durable(dlxQueue).build();
+    DirectExchange dlx = ExchangeBuilder.directExchange(dlxExchange).durable(true).build();
+
+    return new Declarables(
+        dlx,
+        dlq,
+        BindingBuilder.bind(dlq)
+            .to(dlx)
+            .with(dlxRoutingKey));
+  }
+
+  @Bean
+  public Jackson2JsonMessageConverter jsonMessageConverter() {
+    return new Jackson2JsonMessageConverter();
   }
 }

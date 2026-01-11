@@ -32,7 +32,7 @@ public class TaskGraphOutboxEntity {
   @Column(name = "created_at", updatable = false)
   private Instant createdAt;
 
-  @Column(name = "processed_at", updatable = false)
+  @Column(name = "processed_at")
   private Instant processedAt;
 
   @Column(name = "type", nullable = false)
@@ -46,5 +46,5 @@ public class TaskGraphOutboxEntity {
   private OutboxStatus outboxStatus;
 
   @Version
-  private int version;
+  private Integer version;
 }

@@ -47,9 +47,6 @@ public class TaskGraphEventRabbitPublisher implements TaskGraphRequestMessagePub
           messageId,
           taskGraphEventPayload.getClass().getSimpleName());
 
-      rabbitMQMessageHelper.setupReturnsCallback(rabbitTemplate, taskGraphOutboxMessage,
-          outboxCallback);
-
       rabbitTemplate.convertAndSend(
           exchangeName,
           routingKey,

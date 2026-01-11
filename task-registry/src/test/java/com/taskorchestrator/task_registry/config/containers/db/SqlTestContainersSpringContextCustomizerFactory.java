@@ -1,4 +1,4 @@
-package com.taskorchestrator.task_registry.config;
+package com.taskorchestrator.task_registry.config.containers.db;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +50,7 @@ public class SqlTestContainersSpringContextCustomizerFactory implements ContextC
               "spring.datasource.username=" + container.getTestContainer().getUsername());
           testValues = testValues.and(
               "spring.datasource.password=" + container.getTestContainer().getPassword());
-          testValues = testValues.and("spring.jpa.hibernate.ddl-auto=create-drop");
+          testValues = testValues.and("spring.jpa.hibernate.ddl-auto=validate");
         }
 
         testValues.applyTo(context);

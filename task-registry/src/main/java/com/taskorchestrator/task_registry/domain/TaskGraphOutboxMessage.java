@@ -22,5 +22,4 @@ public class TaskGraphOutboxMessage {
   private String type;
   private String payload;
   private OutboxStatus outboxStatus;
-  private int version;
 }

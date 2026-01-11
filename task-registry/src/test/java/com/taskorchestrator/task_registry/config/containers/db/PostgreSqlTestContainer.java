@@ -1,4 +1,4 @@
-package com.taskorchestrator.task_registry.config;
+package com.taskorchestrator.task_registry.config.containers.db;
 
 import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;

@@ -19,9 +19,9 @@ spring:
     hibernate:
       ddl-auto: validate  # или none - чтобы Liquibase управлял схемой
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
 
   rabbitmq:
     host: ${RABBITMQ_HOST_NAME:localhost}
@@ -35,6 +35,8 @@ rabbitmq:
     task-graph: task_graph_exchange
   routing-key:
     task-graph: task_graph_routing_key
+  queue:
+    task-graph: task_graph_queue
 
 task-registry-service:
   outbox-scheduler-fixed-rate: 10000
