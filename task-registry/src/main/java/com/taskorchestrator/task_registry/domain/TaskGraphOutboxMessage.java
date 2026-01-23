@@ -1,10 +1,13 @@
 package com.taskorchestrator.task_registry.domain;
 
+import static com.taskorchestrator.task_registry.service.OutboxService.GRAPH_PROCESSING;
+
 import com.taskorchestrator.task_registry.enums.OutboxStatus;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -19,7 +22,8 @@ public class TaskGraphOutboxMessage {
   private UUID id;
   private Instant createdAt;
   private Instant processedAt;
-  private String type;
-  private String payload;
+  @Default
+  private String type = GRAPH_PROCESSING;
+  private TaskGraphEventPayload payload;
   private OutboxStatus outboxStatus;
 }

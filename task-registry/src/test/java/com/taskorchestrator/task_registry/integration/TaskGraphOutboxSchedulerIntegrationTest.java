@@ -1,15 +1,16 @@
 package com.taskorchestrator.task_registry.integration;
 
 import static com.taskorchestrator.task_registry.service.OutboxService.GRAPH_PROCESSING;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.taskorchestrator.task_registry.config.IntegrationTest;
+import com.taskorchestrator.task_registry.domain.TaskGraphEventPayload;
 import com.taskorchestrator.task_registry.domain.TaskGraphOutboxMessage;
 import com.taskorchestrator.task_registry.enums.OutboxStatus;
 import com.taskorchestrator.task_registry.scheduler.TaskGraphOutboxScheduler;
@@ -17,7 +18,7 @@ import com.taskorchestrator.task_registry.service.OutboxService;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ class TaskGraphOutboxSchedulerIntegrationTest {
       entityManager.createNativeQuery("DELETE FROM graph_tasks").executeUpdate();
       entityManager.createNativeQuery("DELETE FROM task_graphs").executeUpdate();
       entityManager.createNativeQuery("DELETE FROM task_templates").executeUpdate();
-      entityManager.createNativeQuery("DELETE FROM task_templates_outbox").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graph_outbox").executeUpdate();
       transactionManager.commit(status);
     } catch (Exception e) {
       transactionManager.rollback(status);
@@ -62,7 +63,7 @@ class TaskGraphOutboxSchedulerIntegrationTest {
   }
 
   @Test
-  void whenSchedulerRuns_ShouldProcessPendingMessagesAndUpdateStatus() throws Exception {
+  void whenSchedulerRuns_ShouldProcessPendingMessagesAndUpdateStatus() {
     // Arrange
     TaskGraphOutboxMessage message1 = createTestOutboxMessage(OutboxStatus.PENDING);
     TaskGraphOutboxMessage message2 = createTestOutboxMessage(OutboxStatus.PENDING);
@@ -75,22 +76,23 @@ class TaskGraphOutboxSchedulerIntegrationTest {
     taskGraphOutboxScheduler.processOutboxMessage();
 
     // Assert
-    // Ждем немного для обработки
-    Thread.sleep(3000);
-
-    // Проверяем, что метод был вызван
+    // Проверяем, что метод вызван сразу
     verify(taskGraphOutboxScheduler, times(1)).processOutboxMessage();
 
-    // Проверяем, что сообщения обновлены в БД
+    // Затем ждем обновления статуса
+    await().atMost(5, SECONDS).until(() -> {
+      List<TaskGraphOutboxMessage> messages =
+          outboxService.findByTypeAndOutboxStatus(GRAPH_PROCESSING, OutboxStatus.COMPLETED);
+      return messages != null && messages.size() == 2;
+    });
+
+    // Финальные ассерты
     List<TaskGraphOutboxMessage> updatedMessages =
         outboxService.findByTypeAndOutboxStatus(GRAPH_PROCESSING, OutboxStatus.COMPLETED);
 
-    assertNotNull(updatedMessages);
     assertEquals(2, updatedMessages.size());
-
-    // Проверяем, что у всех сообщений статус STARTED
     assertTrue(updatedMessages.stream()
-        .allMatch(msg -> msg.getOutboxStatus() == OutboxStatus.COMPLETED));
+        .allMatch(msg -> OutboxStatus.COMPLETED == msg.getOutboxStatus()));
   }
 
   @Test
@@ -103,8 +105,8 @@ class TaskGraphOutboxSchedulerIntegrationTest {
 
     // Act & Assert с использованием Awaitility
     await()
-        .atMost(30, TimeUnit.SECONDS)
-        .pollInterval(1, TimeUnit.SECONDS)
+        .atMost(30, SECONDS)
+        .pollInterval(1, SECONDS)
         .untilAsserted(() -> {
           // Проверяем, что шедулер запускался несколько раз
           verify(taskGraphOutboxScheduler, atLeast(2)).processOutboxMessage();
@@ -121,7 +123,11 @@ class TaskGraphOutboxSchedulerIntegrationTest {
     TaskGraphOutboxMessage message = new TaskGraphOutboxMessage();
     message.setCreatedAt(Instant.now().minusSeconds(1000));
     message.setType(GRAPH_PROCESSING);
-    message.setPayload("{\"graphId\": \"graphId\", \"createdAt\": \"createdAt\"}");
+    message.setPayload(
+        TaskGraphEventPayload.builder()
+            .graphId(UUID.randomUUID().toString())
+            .createdAt(Instant.now().toString())
+            .build());
     message.setOutboxStatus(status);
     return message;
   }

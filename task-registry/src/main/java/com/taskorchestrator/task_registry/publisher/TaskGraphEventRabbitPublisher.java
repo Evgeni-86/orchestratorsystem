@@ -33,9 +33,7 @@ public class TaskGraphEventRabbitPublisher implements TaskGraphRequestMessagePub
     log.info("Received TaskGraphOutboxMessage for id: {}", taskGraphOutboxMessage.getId());
 
     try {
-      TaskGraphEventPayload taskGraphEventPayload =
-          rabbitMQMessageHelper.getEventPayload(taskGraphOutboxMessage.getPayload(),
-              TaskGraphEventPayload.class);
+      TaskGraphEventPayload taskGraphEventPayload = taskGraphOutboxMessage.getPayload();
 
       String messageId = UUID.randomUUID().toString();
 

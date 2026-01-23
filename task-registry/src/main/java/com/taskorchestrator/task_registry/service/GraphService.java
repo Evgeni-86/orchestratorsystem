@@ -1,9 +1,9 @@
 package com.taskorchestrator.task_registry.service;
 
-import static java.util.stream.Collectors.toList;
-
 import com.taskorchestrator.task_registry.domain.TaskDependency;
 import com.taskorchestrator.task_registry.domain.TaskGraph;
+import com.taskorchestrator.task_registry.domain.TaskGraphEventPayload;
+import com.taskorchestrator.task_registry.domain.TaskGraphOutboxMessage;
 import com.taskorchestrator.task_registry.domain.TaskTemplate;
 import com.taskorchestrator.task_registry.domain.validator.GraphValidator;
 import com.taskorchestrator.task_registry.domain.validator.ValidationResult;
@@ -13,6 +13,7 @@ import com.taskorchestrator.task_registry.dto.graph.TaskGraphResponseDto;
 import com.taskorchestrator.task_registry.entity.TaskDependencyEntity;
 import com.taskorchestrator.task_registry.entity.TaskGraphEntity;
 import com.taskorchestrator.task_registry.entity.TaskTemplateEntity;
+import com.taskorchestrator.task_registry.enums.OutboxStatus;
 import com.taskorchestrator.task_registry.exception.GraphValidationException;
 import com.taskorchestrator.task_registry.exception.ObjectNotFoundException;
 import com.taskorchestrator.task_registry.mapper.graph.GraphDirectMapper;
@@ -42,6 +43,7 @@ public class GraphService {
   private final GraphDtoMapper graphDtoMapper;
   private final GraphDirectMapper graphDirectMapper;
   private final GraphEntityMapper graphEntityMapper;
+  private final OutboxService outboxService;
 
   @Transactional
   public TaskGraphResponseDto createTaskGraph(TaskGraphCreateDto taskGraphCreateDto) {
@@ -69,9 +71,22 @@ public class GraphService {
 
     // 5. Сохранение
     TaskGraphEntity savedEntity = taskGraphRepository.save(entity);
+    TaskGraphOutboxMessage message = createOutboxMessage(savedEntity);
+    outboxService.save(message);
     log.info("Created task graph with id: {}", savedEntity.getId());
 
     return graphDirectMapper.entityToResponseDtoWithEntryPoint(savedEntity, entryPoints);
+  }
+
+  private TaskGraphOutboxMessage createOutboxMessage(TaskGraphEntity savedEntity) {
+    TaskGraphEventPayload payload = TaskGraphEventPayload.builder()
+        .graphId(savedEntity.getId().toString())
+        .createdAt(savedEntity.getCreatedAt().toString())
+        .build();
+    return TaskGraphOutboxMessage.builder()
+        .payload(payload)
+        .outboxStatus(OutboxStatus.PENDING)
+        .build();
   }
 
   private List<TaskTemplateEntity> loadTemplates(TaskGraph domainGraph) {

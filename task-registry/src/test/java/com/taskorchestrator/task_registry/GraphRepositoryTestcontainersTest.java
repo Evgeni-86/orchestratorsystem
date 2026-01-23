@@ -56,6 +56,7 @@ class GraphRepositoryTestcontainersTest {
       entityManager.createNativeQuery("DELETE FROM graph_tasks").executeUpdate();
       entityManager.createNativeQuery("DELETE FROM task_graphs").executeUpdate();
       entityManager.createNativeQuery("DELETE FROM task_templates").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graph_outbox").executeUpdate();
       transactionManager.commit(status);
     } catch (Exception e) {
       transactionManager.rollback(status);
