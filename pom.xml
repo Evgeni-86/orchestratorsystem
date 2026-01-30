@@ -50,6 +50,24 @@
           <parameters>true</parameters>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.github.ferstl</groupId>
+        <artifactId>depgraph-maven-plugin</artifactId>
+        <version>4.0.3</version>
+        <configuration>
+          <createImage>false</createImage>
+          <reduceEdges>false</reduceEdges>
+          <classpathScope>compile</classpathScope>
+          <includes>
+            <include>com.task*:*</include>
+          </includes>
+          <!-- Дополнительные настройки для точного соответствия -->
+          <showVersions>true</showVersions>
+          <showGroupIds>true</showGroupIds>
+          <showDuplicates>false</showDuplicates>
+          <graphFormat>dot</graphFormat>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
