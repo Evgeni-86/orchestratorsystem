@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: task-registry
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yml
+
+  # Настройки базы данных (для локальной разработки)
+  datasource:
+    username: postgresdb-user-prod
+    password: postgresdb-pwd-prod
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${HOST_NAME:localhost}:5432/orchestratorsystem
+
+  # Настройки JPA/Hibernate
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate  # или none - чтобы Liquibase управлял схемой
+    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST_NAME:localhost}
+    port: 5672
+    username: rabbit-user-prod
+    password: rabbit-pwd-prod
+    connection-timeout: 30000
+    publisher-confirm-type: correlated
+rabbitmq:
+  exchange:
+    task-graph: task_graph_exchange
+  routing-key:
+    task-graph: task_graph_routing_key
+  queue:
+    task-graph: task_graph_queue
+
+task-registry-service:
+  outbox-scheduler-fixed-rate: 10000
+  outbox-scheduler-initial-delay: 10000
+
+# Настройки порта (опционально, по умолчанию 8080)
+server:
+  port: 8080
