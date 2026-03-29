@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: optional:file:./src/main/resources/application.yaml
+
+task-registry-service:
+  outbox-scheduler-fixed-rate: 5000
+  outbox-scheduler-initial-delay: 5000

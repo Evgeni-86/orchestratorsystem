@@ -21,6 +21,7 @@
   <modules>
     <module>task-registry</module>
 	<module>task-registry-gex</module>
+    <module>orchestration-engine-service-gex</module>
   </modules>
 
   <properties>

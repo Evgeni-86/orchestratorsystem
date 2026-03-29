@@ -16,7 +16,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JpaTaskGraphOutboxJpaRepository extends
-    JpaRepository<TaskGraphOutboxEntity, UUID>, TaskGraphOutboxJpaRepository {
+    JpaRepository<TaskGraphOutboxEntity, UUID> {
 
   Optional<List<TaskGraphOutboxEntity>> findByTypeAndOutboxStatus(String type,
       OutboxStatus outboxStatus);
@@ -25,6 +25,12 @@ public interface JpaTaskGraphOutboxJpaRepository extends
 
   void deleteByTypeAndOutboxStatus(String type, OutboxStatus outboxStatus);
 
+/*Если уровень изоляции REPUTABLE READ
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT e FROM TaskGraphOutboxEntity e " +
+      "WHERE e.outboxStatus = :status " +
+      "ORDER BY e.createdAt ASC")
+  @QueryHints(@QueryHint(name = "javax.persistence.lock.timeout", value = "-2")) // -2 = SKIP LOCKED*/
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT e FROM TaskGraphOutboxEntity e " +
       "WHERE e.outboxStatus = :status " +

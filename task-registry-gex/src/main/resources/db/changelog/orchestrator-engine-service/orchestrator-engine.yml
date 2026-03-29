@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - logicalFilePath: db/changelog/orchestrator-engine-service/orchestrator-engine.yml
+
+  - changeSet:
+      id: create_tables_orchestrator-engine
+      author: Batanov Evgenii
+      comment: Создание таблицы оркестратора выполнения задач
+      changes:
+        - sqlFile:
+            path: create_tables_orchestrator-engine.sql
+            relativeToChangelogFile: true

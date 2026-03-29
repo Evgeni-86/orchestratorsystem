@@ -16,6 +16,8 @@ public interface TaskTemplateRepository {
 
   TaskTemplateEntity save(TaskTemplateEntity taskTemplate);
 
+  List<TaskTemplateEntity> saveAll(List<TaskTemplateEntity> taskTemplateEntities);
+
   Optional<TaskTemplateEntity> findById(UUID uuid);
 
   void deleteById(UUID id);

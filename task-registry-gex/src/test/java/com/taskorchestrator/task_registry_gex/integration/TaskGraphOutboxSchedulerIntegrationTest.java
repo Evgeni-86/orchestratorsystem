@@ -1,0 +1,134 @@
+package com.taskorchestrator.task_registry_gex.integration;
+
+import static com.taskorchestrator.task_registry_gex.application.core.service.OutboxServiceImpl.GRAPH_PROCESSING;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import com.taskorchestrator.task_registry_gex.config.IntegrationTest;
+import com.taskorchestrator.task_registry_gex.adapter.out.scheduler.TaskGraphOutboxScheduler;
+import com.taskorchestrator.task_registry_gex.application.core.domain.TaskGraphEventPayload;
+import com.taskorchestrator.task_registry_gex.application.core.domain.TaskGraphOutboxMessage;
+import com.taskorchestrator.task_registry_gex.application.core.domain.enums.OutboxStatus;
+import com.taskorchestrator.task_registry_gex.application.core.port.in.OutboxService;
+import jakarta.persistence.EntityManager;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+@IntegrationTest
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+class TaskGraphOutboxSchedulerIntegrationTest {
+
+  @MockitoSpyBean
+  private TaskGraphOutboxScheduler taskGraphOutboxScheduler;
+  @Autowired
+  private OutboxService outboxService;
+  @Autowired
+  private EntityManager entityManager;
+  @Autowired
+  private PlatformTransactionManager transactionManager;
+
+  @BeforeEach
+  void cleanDatabase() {
+    TransactionStatus status = transactionManager.getTransaction(
+        new DefaultTransactionDefinition());
+    try {
+      entityManager.createNativeQuery("DELETE FROM task_dependencies").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM graph_tasks").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graphs").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_templates").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graph_outbox").executeUpdate();
+      transactionManager.commit(status);
+    } catch (Exception e) {
+      transactionManager.rollback(status);
+      throw e;
+    }
+    entityManager.clear();
+  }
+
+  @Test
+  void whenSchedulerRuns_ShouldProcessPendingMessagesAndUpdateStatus() {
+    // Arrange
+    TaskGraphOutboxMessage message1 = createTestOutboxMessage(OutboxStatus.PENDING);
+    TaskGraphOutboxMessage message2 = createTestOutboxMessage(OutboxStatus.PENDING);
+
+    outboxService.save(message1);
+    outboxService.save(message2);
+
+    // Act
+    // Запускаем шедулер вручную (имитируем выполнение)
+    taskGraphOutboxScheduler.processOutboxMessage();
+
+    // Assert
+    // Проверяем, что метод вызван сразу
+    verify(taskGraphOutboxScheduler, times(1)).processOutboxMessage();
+
+    // Затем ждем обновления статуса
+    await().atMost(5, SECONDS).until(() -> {
+      List<TaskGraphOutboxMessage> messages =
+          outboxService.findByTypeAndOutboxStatus(GRAPH_PROCESSING, OutboxStatus.COMPLETED);
+      return messages != null && messages.size() == 2;
+    });
+
+    // Финальные ассерты
+    List<TaskGraphOutboxMessage> updatedMessages =
+        outboxService.findByTypeAndOutboxStatus(GRAPH_PROCESSING, OutboxStatus.COMPLETED);
+
+    assertEquals(2, updatedMessages.size());
+    assertTrue(updatedMessages.stream()
+        .allMatch(msg -> OutboxStatus.COMPLETED == msg.getOutboxStatus()));
+  }
+
+  @Test
+  void testMultipleScheduledExecutions() {
+    // Arrange
+    for (int i = 0; i < 5; i++) {
+      TaskGraphOutboxMessage message = createTestOutboxMessage(OutboxStatus.PENDING);
+      outboxService.save(message);
+    }
+
+    // Act & Assert с использованием Awaitility
+    await()
+        .atMost(30, SECONDS)
+        .pollInterval(1, SECONDS)
+        .untilAsserted(() -> {
+          // Проверяем, что шедулер запускался несколько раз
+          verify(taskGraphOutboxScheduler, atLeast(2)).processOutboxMessage();
+
+          // Проверяем, что все сообщения обработаны
+          List<TaskGraphOutboxMessage> pendingMessages =
+              outboxService.findByTypeAndOutboxStatus(GRAPH_PROCESSING, OutboxStatus.PENDING);
+
+          assertTrue(pendingMessages.isEmpty());
+        });
+  }
+
+  private TaskGraphOutboxMessage createTestOutboxMessage(OutboxStatus status) {
+    TaskGraphOutboxMessage message = new TaskGraphOutboxMessage();
+    message.setCreatedAt(Instant.now().minusSeconds(1000));
+    message.setType(GRAPH_PROCESSING);
+    message.setPayload(
+        TaskGraphEventPayload.builder()
+            .graphId(UUID.randomUUID().toString())
+            .createdAt(Instant.now().toString())
+            .build());
+    message.setOutboxStatus(status);
+    return message;
+  }
+}

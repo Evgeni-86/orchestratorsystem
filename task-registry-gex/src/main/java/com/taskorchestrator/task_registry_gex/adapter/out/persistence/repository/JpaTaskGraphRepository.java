@@ -14,8 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface JpaTaskGraphRepository extends JpaRepository<TaskGraphEntity, UUID>,
-    TaskGraphRepository {
+public interface JpaTaskGraphRepository extends JpaRepository<TaskGraphEntity, UUID> {
 
   // Граф с шаблонами
   @Query("SELECT g FROM TaskGraphEntity g LEFT JOIN FETCH g.templates WHERE g.id = :id")

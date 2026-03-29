@@ -1,5 +1,5 @@
 databaseChangeLog:
-  - logicalFilePath: db/changelog/changelog/task_registry.yml
+  - logicalFilePath: db/changelog/task-registry-service/task_registry.yml
 
   - changeSet:
       id: create_table_task_registry

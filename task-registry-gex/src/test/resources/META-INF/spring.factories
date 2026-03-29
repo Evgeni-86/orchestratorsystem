@@ -1,0 +1,1 @@
+org.springframework.test.context.ContextCustomizerFactory = com.taskorchestrator.task_registry_gex.config.containers.db.SqlTestContainersSpringContextCustomizerFactory, com.taskorchestrator.task_registry_gex.config.containers.rabbit.RabbitMQTestContainersSpringContextCustomizerFactory

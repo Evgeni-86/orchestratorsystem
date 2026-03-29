@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: orchestration-engine-service
+
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yml
+
+#  # Настройки базы данных (для локальной разработки)
+  datasource:
+    username: postgresdb-user-prod
+    password: postgresdb-pwd-prod
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${HOST_NAME:localhost}:5432/orchestratorsystem
+
+  # Настройки JPA/Hibernate
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate  # или none - чтобы Liquibase управлял схемой
+    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST_NAME:localhost}
+    port: 5672
+    username: rabbit-user-prod
+    password: rabbit-pwd-prod
+    connection-timeout: 30000
+    listener:
+      simple:
+        missing-queues-fatal: false  # не падать, если очередь не существует
+rabbit:
+  queue:
+    task-graph: task_graph_queue
+
+# Настройки порта (опционально, по умолчанию 8080)
+server:
+  port: 8080

@@ -1,0 +1,129 @@
+package com.taskorchestrator.task_registry_gex;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.taskorchestrator.task_registry_gex.config.IntegrationTest;
+import com.taskorchestrator.task_registry_gex.adapter.out.persistence.entity.TaskDependencyEntity;
+import com.taskorchestrator.task_registry_gex.adapter.out.persistence.entity.TaskGraphEntity;
+import com.taskorchestrator.task_registry_gex.adapter.out.persistence.entity.TaskTemplateEntity;
+import com.taskorchestrator.task_registry_gex.application.core.domain.enums.TaskCondition;
+import com.taskorchestrator.task_registry_gex.application.core.domain.enums.TaskType;
+import com.taskorchestrator.task_registry_gex.application.core.port.out.TaskGraphRepository;
+import com.taskorchestrator.task_registry_gex.application.core.port.out.TaskTemplateRepository;
+import jakarta.persistence.EntityManager;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+@IntegrationTest
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
+class TaskTemplateRepositoryTestcontainersTest {
+
+  @Autowired
+  private TaskTemplateRepository templateRepo;
+  @Autowired
+  private TaskGraphRepository graphRepo;
+  @Autowired
+  private EntityManager entityManager;
+  @Autowired
+  private PlatformTransactionManager transactionManager;
+
+  @BeforeEach
+  void cleanDatabase() {
+    TransactionStatus status = transactionManager.getTransaction(
+        new DefaultTransactionDefinition());
+    try {
+      entityManager.createNativeQuery("DELETE FROM task_dependencies").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM graph_tasks").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graphs").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_templates").executeUpdate();
+      entityManager.createNativeQuery("DELETE FROM task_graph_outbox").executeUpdate();
+      transactionManager.commit(status);
+    } catch (Exception e) {
+      transactionManager.rollback(status);
+      throw e;
+    }
+    entityManager.clear();
+  }
+
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void shouldSaveAndLoadCompleteTaskGraph() {
+    // Начинаем транзакцию
+    TransactionStatus status = transactionManager.getTransaction(
+        new DefaultTransactionDefinition()
+    );
+
+    try {
+      // 1. Создаём шаблоны задач
+      TaskTemplateEntity task1 = createTemplate("validate-payment", TaskType.HTTP_CALL);
+      TaskTemplateEntity task2 = createTemplate("process-payment", TaskType.DATABASE_QUERY);
+      TaskTemplateEntity task3 = createTemplate("send-receipt", TaskType.HTTP_CALL);
+
+      templateRepo.saveAll(List.of(task1, task2, task3));
+
+      // 2. Создаём граф
+      TaskGraphEntity graph = new TaskGraphEntity();
+      graph.setName("Payment Workflow");
+      graph.setTemplates(List.of(task1, task2, task3));
+
+      // 3. Создаём зависимости
+      TaskDependencyEntity dep1 = new TaskDependencyEntity();
+      dep1.setGraph(graph);
+      dep1.setParent(task1);
+      dep1.setChild(task2);
+      dep1.setCondition(TaskCondition.SUCCESS);
+
+      TaskDependencyEntity dep2 = new TaskDependencyEntity();
+      dep2.setGraph(graph);
+      dep2.setParent(task2);
+      dep2.setChild(task3);
+      dep2.setCondition(TaskCondition.SUCCESS);
+
+      graph.setDependencies(List.of(dep1, dep2));
+
+      // 4. Сохраняем граф
+      graphRepo.save(graph);
+      entityManager.flush();
+      entityManager.clear();
+
+      // 5. Загружаем обратно (все ещё в транзакции!)
+      TaskGraphEntity loadedGraph = graphRepo.findById(graph.getId()).orElseThrow();
+
+      // Проверки РАБОТАЮТ (ленивые коллекции доступны)
+      assertThat(loadedGraph.getName()).isEqualTo("Payment Workflow");
+      assertThat(loadedGraph.getTemplates()).hasSize(3);
+      assertThat(loadedGraph.getDependencies()).hasSize(2);
+
+      // 6. Коммитим транзакцию
+      transactionManager.commit(status);
+      System.out.println("commit");
+    } catch (Exception e) {
+      transactionManager.rollback(status);
+      throw e;
+    }
+
+  }
+
+  private TaskTemplateEntity createTemplate(String name, TaskType type) {
+    TaskTemplateEntity template = new TaskTemplateEntity();
+    template.setName(name);
+    template.setVersion("1.0");
+    template.setType(type);
+    template.setInputSchema(Map.of("type", "object"));
+    template.setOutputSchema(Map.of("type", "object"));
+    template.setConfig(Map.of("timeout", 5000));
+    return template;
+  }
+}

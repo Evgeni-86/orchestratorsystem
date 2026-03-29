@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JpaTaskTemplateRepository extends JpaRepository<TaskTemplateEntity, UUID>,
-    JpaSpecificationExecutor<TaskTemplateEntity>, TaskTemplateRepository {
+    JpaSpecificationExecutor<TaskTemplateEntity> {
 
 }
